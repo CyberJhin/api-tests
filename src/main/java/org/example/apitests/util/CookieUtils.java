@@ -1,4 +1,4 @@
-package org.example.apitests.Util;
+package org.example.apitests.util;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;

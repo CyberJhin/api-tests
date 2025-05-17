@@ -5,6 +5,21 @@ spring:
   application:
     name: api-tests
 
+
+  graphql:
+    path: /graphql           # endpoint для GraphQL
+    graphiql:
+      enabled: true          # если используешь GraphiQL Spring Boot Starter (не WebJar)
+      path: /graphiql
+    cors:
+      allowed-origins: "*"   # разрешаем CORS со всех доменов
+      allowed-methods: GET, POST
+      allowed-headers: "*"
+
+  web:
+    resources:
+      static-locations: classpath:/META-INF/resources/,classpath:/static/ # чтобы отдавать WebJar и HTML UI
+
   datasource:
     url: jdbc:postgresql://localhost:54321/habrdb1
     username: habrpguser1

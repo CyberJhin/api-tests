@@ -58,6 +58,10 @@ public class SecurityConfigurator {
                 )
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/auth/**").permitAll()
+                        // .requestMatchers("/graphql").permitAll()           // Разрешаем GraphQL-запросы без токена
+                        .requestMatchers("/graphiql/**").permitAll()       // Разрешаем доступ к GraphiQL UI (если используешь)
+                        .requestMatchers("/vendor/**").permitAll()         // Разрешаем статику для GraphiQL WebJar
+                        .anyRequest().authenticated()                      // Всё остальное — с авторизацией
 
 
                 )

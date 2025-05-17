@@ -1,0 +1,76 @@
+type Query {
+    gameById(id: ID!): GameDTO
+    gamesByTitle(title: String!): [GameDTO!]!
+    gamesByTitlePart(titlePart: String!): [GameDTO!]!
+    allGames: [GameDTO!]!
+
+    studioById(id: ID!): StudioDTO
+    studiosByNamePart(namePart: String!): [StudioDTO!]!
+    allStudios: [StudioDTO!]!
+
+    reviewsByGame(gameId: ID!, page: Int = 0, size: Int = 5): ReviewPageDTO!
+    reviewById(id: ID!): ReviewDTO
+}
+
+type Mutation {
+    createGame(input: GameInput!): GameDTO
+    updateGame(id: ID!, input: GameInput!): GameDTO
+    deleteGame(id: ID!): Boolean
+
+    createStudio(input: StudioInput!): StudioDTO
+    updateStudio(id: ID!, input: StudioInput!): StudioDTO
+    deleteStudio(id: ID!): Boolean
+
+    createReview(input: ReviewInput!): ReviewDTO
+    updateReview(id: ID!, input: ReviewInput!): ReviewDTO
+    deleteReview(id: ID!): Boolean
+}
+
+input GameInput {
+    title: String!
+    genre: String!
+    studioId: ID!
+}
+
+input StudioInput {
+    name: String!
+    country: String!
+}
+
+input ReviewInput {
+    author: String!
+    content: String!
+    rating: Int!
+    gameId: ID!
+}
+
+type GameDTO {
+    id: ID!
+    title: String!
+    genre: String!
+    studioId: ID!
+    studioName: String
+    reviews: [ReviewDTO!]
+}
+
+type StudioDTO {
+    id: ID!
+    name: String!
+    country: String!
+    gameIds: [ID!]
+}
+
+type ReviewDTO {
+    id: ID!
+    author: String!
+    content: String!
+    rating: Int!
+    gameId: ID!
+}
+
+type ReviewPageDTO {
+    content: [ReviewDTO!]!
+    pageNumber: Int!
+    totalPages: Int!
+    totalElements: Int!
+}

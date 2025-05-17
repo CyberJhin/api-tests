@@ -3,7 +3,7 @@ package org.example.apitests.controller;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
-import org.example.apitests.Util.CookieUtils;
+import org.example.apitests.util.CookieUtils;
 import org.example.apitests.jwt.JwtCore;
 import org.example.apitests.model.RefreshToken;
 import org.example.apitests.model.User;
