@@ -6,8 +6,8 @@ import org.example.apitests.model.DTO.GameDTO;
 import org.example.apitests.model.Game;
 import org.example.apitests.model.Studio;
 import org.example.apitests.model.mapper.GameMapper;
-import org.example.apitests.service.GameService;
-import org.example.apitests.service.StudioService;
+import org.example.apitests.service.graphql.GameService;
+import org.example.apitests.service.graphql.StudioService;
 import org.springframework.graphql.data.method.annotation.*;
 import org.springframework.stereotype.Controller;
 

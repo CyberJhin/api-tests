@@ -1,4 +1,4 @@
-package org.example.apitests.service;
+package org.example.apitests.service.user;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

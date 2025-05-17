@@ -1,144 +1,112 @@
 package org.example.apitests.controller;
 
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
-import org.example.apitests.util.CookieUtils;
-import org.example.apitests.jwt.JwtCore;
-import org.example.apitests.model.RefreshToken;
-import org.example.apitests.model.User;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+import org.example.apitests.customException.InvalidRefreshTokenException;
+import org.example.apitests.customException.UserAlreadyExistsException;
 import org.example.apitests.model.request.SigninRequest;
 import org.example.apitests.model.request.SignupRequest;
 import org.example.apitests.model.response.AuthResponse;
-import org.example.apitests.repository.UserRepository;
-import org.example.apitests.service.UserDetailsImpl;
+import org.example.apitests.service.security.AuthService;
+import org.example.apitests.service.security.RegistrationService;
+import org.example.apitests.service.security.TokenService;
+import org.example.apitests.util.CookieUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.*;
-import org.example.apitests.service.RefreshTokenService;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
 public class SecurityController {
 
-    private UserRepository userRepository;
-    private PasswordEncoder passwordEncoder;
-    private AuthenticationManager authenticationManager;
-    private JwtCore jwtCore;
-    private RefreshTokenService refreshTokenService;
+
+    private final RegistrationService registrationService;
+    private final AuthService authService;
+    private final TokenService tokenService;
 
     @Autowired
-    public void setUserRepository(RefreshTokenService refreshTokenService) {
-        this.refreshTokenService = refreshTokenService;
+    public SecurityController(RegistrationService registrationService, AuthService authService, TokenService tokenService) {
+        this.registrationService = registrationService;
+        this.authService = authService;
+        this.tokenService = tokenService;
     }
 
-    @Autowired
-    public void setUserRepository(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
-
-    @Autowired
-    public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
-        this.passwordEncoder = passwordEncoder;
-    }
-
-    @Autowired
-    public void setJwtCore(JwtCore jwtCore) {
-        this.jwtCore = jwtCore;
-    }
-
-    @Autowired
-    public void setAuthenticationManager(AuthenticationManager authenticationManager) {
-        this.authenticationManager = authenticationManager;
-    }
 
     @PostMapping("/signin")
-    public ResponseEntity<?> signin(@RequestBody SigninRequest signinRequest,
+    public ResponseEntity<?> signin(@Valid @RequestBody SigninRequest signinRequest,
+                                    BindingResult bindingResult,
                                     HttpServletResponse response) {
+        if (bindingResult.hasErrors()) {
+            Map<String, String> errors = new HashMap<>();
+            bindingResult.getFieldErrors().forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
+            return ResponseEntity.badRequest().body(Map.of(
+                    "status", "error",
+                    "errors", errors
+            ));
+        }
         try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            signinRequest.getUsername(), signinRequest.getPassword())
-            );
-
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-
-            String accessToken = jwtCore.generateAccessToken(authentication);
-            String userUuid = ((UserDetailsImpl) authentication.getPrincipal()).getUuid();
-
-            // Генерация нового refreshToken и его сохранение в базе данных
-            RefreshToken refreshToken = refreshTokenService.createToken(userUuid);
-
-            // Устанавливаем refreshToken в HttpOnly cookie
-            Cookie cookie = new Cookie("refreshToken", refreshToken.getToken());
-            cookie.setHttpOnly(true);
-            cookie.setSecure(true); // обязательно для HTTPS
-            cookie.setPath("/");    // доступен на всём сервере
-            cookie.setMaxAge(7 * 24 * 60 * 60); // 7 дней
-            response.addCookie(cookie);
-
-            return ResponseEntity.ok(new AuthResponse(accessToken));
+            AuthResponse authResponse = authService.login(signinRequest, response);
+            return ResponseEntity.ok(Map.of(
+                    "status", "success",
+                    "accessToken", authResponse.getAccessToken()
+            ));
         } catch (BadCredentialsException e) {
-            return new ResponseEntity<>("Invalid credentials", HttpStatus.UNAUTHORIZED);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+                    "status", "error",
+                    "message", "Invalid credentials"
+            ));
         }
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(@RequestBody SignupRequest signupRequest) {
-        if (userRepository.existsByUsername(signupRequest.getUsername())) {
-            return ResponseEntity.status(400).body("Username already exists");
+    public ResponseEntity<?> signup(@Valid @RequestBody SignupRequest signupRequest, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            Map<String, String> errors = new HashMap<>();
+            bindingResult.getFieldErrors().forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
+            return ResponseEntity.badRequest().body(Map.of(
+                    "status", "error",
+                    "errors", errors
+            ));
         }
-        if (userRepository.existsByEmail(signupRequest.getEmail())) {
-            return ResponseEntity.status(400).body("Email already exists");
+        try {
+            registrationService.registerUser(signupRequest);
+            return ResponseEntity.status(201).body(Map.of(
+                    "status", "success",
+                    "message", "User registered successfully"
+            ));
+        } catch (UserAlreadyExistsException e) {
+            return ResponseEntity.status(409).body(Map.of(
+                    "status", "error",
+                    "message", e.getMessage()
+            ));
         }
-
-        User user = new User();
-        String hashed = passwordEncoder.encode(signupRequest.getPassword());
-        user.setPassword(hashed);
-        user.setUsername(signupRequest.getUsername());
-        user.setEmail(signupRequest.getEmail());
-        userRepository.save(user);
-        return ResponseEntity.ok("Success");
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshAccessToken(HttpServletRequest request,
-                                                HttpServletResponse response) {
+    public ResponseEntity<?> refreshAccessToken(HttpServletRequest request, HttpServletResponse response) {
         String token = CookieUtils.getCookieValue(request, "refreshToken");
 
-        if (token == null || !refreshTokenService.validate(token)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or expired refresh token");
+        try {
+            var tokens = tokenService.refreshTokens(token, response);
+            return ResponseEntity.ok(Map.of(
+                    "status", "success",
+                    "accessToken", tokens.get("accessToken")
+            ));
+        } catch (InvalidRefreshTokenException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+                    "status", "error",
+                    "message", e.getMessage()
+            ));
         }
-
-        String userUuid = jwtCore.getUuidFromRefreshToken(token);
-        if (userUuid == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
-        }
-
-        // Удалить использованный токен (одноразовость)
-        refreshTokenService.delete(token);
-
-        // Создать новый refresh и access токены
-        Authentication authentication = new UsernamePasswordAuthenticationToken(userUuid, null, null);
-        String accessToken = jwtCore.generateAccessToken(authentication);
-        String newRefreshToken = refreshTokenService.createToken(userUuid).getToken();
-
-        // Установить новый refreshToken в куку
-        Cookie cookie = new Cookie("refreshToken", newRefreshToken);
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(7 * 24 * 60 * 60);
-        response.addCookie(cookie);
-
-        return ResponseEntity.ok(Map.of("accessToken", accessToken));
     }
 }

@@ -1,7 +1,6 @@
-package org.example.apitests.service;
+package org.example.apitests.service.user;
 
 import org.example.apitests.model.User;
-
 import org.example.apitests.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,7 +8,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UserService implements CustomUserDetailsService{
+public class UserService implements CustomUserDetailsService {
     private final UserRepository userRepository;
 
     @Autowired

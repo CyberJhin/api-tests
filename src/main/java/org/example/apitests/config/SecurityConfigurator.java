@@ -1,7 +1,7 @@
 package org.example.apitests.config;
 
 import org.example.apitests.jwt.TokenFilter;
-import org.example.apitests.service.UserService;
+import org.example.apitests.service.user.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;

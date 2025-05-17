@@ -1,4 +1,4 @@
-package org.example.apitests.service;
+package org.example.apitests.service.graphql;
 
 import org.example.apitests.model.Game;
 import org.example.apitests.repository.GameRepository;

@@ -6,8 +6,8 @@ import org.example.apitests.model.DTO.ReviewDTO;
 import org.example.apitests.model.Game;
 import org.example.apitests.model.Review;
 import org.example.apitests.model.mapper.ReviewMapper;
-import org.example.apitests.service.GameService;
-import org.example.apitests.service.ReviewService;
+import org.example.apitests.service.graphql.GameService;
+import org.example.apitests.service.graphql.ReviewService;
 import org.springframework.graphql.data.method.annotation.*;
 import org.springframework.stereotype.Controller;
 
@@ -79,10 +79,10 @@ public class ReviewController {
     @Getter
     public static class ReviewPageDTO {
         // getters
-        private List<ReviewDTO> content;
-        private int pageNumber;
-        private int totalPages;
-        private int totalElements;
+        private final List<ReviewDTO> content;
+        private final int pageNumber;
+        private final int totalPages;
+        private final int totalElements;
 
         public ReviewPageDTO(List<ReviewDTO> content, int pageNumber, int totalPages, int totalElements) {
             this.content = content;

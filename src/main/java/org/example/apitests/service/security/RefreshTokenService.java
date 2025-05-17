@@ -1,4 +1,4 @@
-package org.example.apitests.service;
+package org.example.apitests.service.security;
 
 import jakarta.transaction.Transactional;
 import org.example.apitests.model.RefreshToken;

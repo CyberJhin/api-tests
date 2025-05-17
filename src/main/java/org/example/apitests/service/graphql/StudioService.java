@@ -1,4 +1,4 @@
-package org.example.apitests.service;
+package org.example.apitests.service.graphql;
 
 import org.example.apitests.model.Studio;
 import org.example.apitests.repository.StudioRepository;

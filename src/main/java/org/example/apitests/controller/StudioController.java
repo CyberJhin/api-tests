@@ -5,7 +5,7 @@ import lombok.Setter;
 import org.example.apitests.model.DTO.StudioDTO;
 import org.example.apitests.model.Studio;
 import org.example.apitests.model.mapper.StudioMapper;
-import org.example.apitests.service.StudioService;
+import org.example.apitests.service.graphql.StudioService;
 import org.springframework.graphql.data.method.annotation.*;
 import org.springframework.stereotype.Controller;
 

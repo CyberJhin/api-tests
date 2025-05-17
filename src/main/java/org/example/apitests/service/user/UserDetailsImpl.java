@@ -1,4 +1,4 @@
-package org.example.apitests.service;
+package org.example.apitests.service.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
