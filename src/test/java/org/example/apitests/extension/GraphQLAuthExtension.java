@@ -8,8 +8,6 @@ public class GraphQLAuthExtension implements BeforeEachCallback, ParameterResolv
 
     @Override
     public void beforeEach(ExtensionContext context) {
-        // Заранее создай пользователя, если нужно (например, через UserRegistrationFactory)
-        // или используй тестового, у которого известны логин и пароль
         token = AuthUtil.getAccessToken("testUsername", "password");
     }
 
