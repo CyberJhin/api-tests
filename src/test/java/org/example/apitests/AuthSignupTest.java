@@ -6,6 +6,7 @@ import org.example.apitests.extension.RestAssuredBaseExtension;
 import org.example.apitests.extension.UserRegistrationExtension;
 import org.example.apitests.model.request.SignupRequest;
 import org.example.apitests.testutil.UserRegistrationFactory;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -13,16 +14,22 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.Stream;
-
+import io.qameta.allure.*;
 import static io.restassured.RestAssured.given;
 
-@ExtendWith({RestAssuredBaseExtension.class, UserRegistrationExtension.class})
-
+@Epic("Authentication")
+@Feature("Signup")
+@Story("POST /auth/signup")
+@Owner("https://github.com/CyberJhin/api-tests")
+@Severity(SeverityLevel.CRITICAL)
+@ExtendWith({RestAssuredBaseExtension.class})
 class AuthSignupTest {
 
     static final String SIGNUP_URL = "/auth/signup";
 
     @Test
+    @DisplayName("Успешная регистрация пользователя")
+    @Description("Регистрируем пользователя с валидными данными")
     void signupSuccess() {
         var req = UserRegistrationFactory.valid();
 
@@ -33,6 +40,9 @@ class AuthSignupTest {
     }
 
     @Test
+    @DisplayName("Дубликат username")
+    @Description("Пытаемся зарегистрировать пользователя с уже существующим username")
+    @ExtendWith(UserRegistrationExtension.class)
     void signupDuplicateUsername(SignupRequest existingUser) {
         // Создаем нового юзера с таким же username, но другим email
         SignupRequest dupe = UserRegistrationFactory.withUsername(existingUser.getUsername());
@@ -44,6 +54,8 @@ class AuthSignupTest {
     }
 
     @ParameterizedTest(name = "[{index}] Негативная регистрация: {0}")
+    @DisplayName("Ошибки валидации")
+    @Description("Пытаемся зарегистрировать пользователя с некорректными данными")
     @MethodSource("invalidUsers")
     void signupInvalid(String scenario, SignupRequest req) {
         new SignupAssert(
