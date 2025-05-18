@@ -51,7 +51,7 @@
 ## Примеры тестов
 
 - `AuthSignupTest.java` — пример теста регистрации пользователя.
-- `ApiTestsApplicationTests.java` — базовые интеграционные тесты приложения.
+- `StudioGraphQLTest.java` — пример теста для graphql.
 - Каталоги `assertions`, `extension`, `testutil` содержат вспомогательные классы, расширяющие возможности тестирования.
 
 ## Как запустить
